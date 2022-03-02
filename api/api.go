@@ -11,6 +11,8 @@ func GetRouter() *chi.Mux {
 
 	r.Post("/word", handlers.GuessWord)
 	r.Get("/rules", handlers.GetRules)
+	r.Post("/session", handlers.NewSession)
+	r.Get("/session", handlers.GetSession)
 	// r.Get("/word", handlers.GetWord)
 	// r.Get("/state", handlers.GetGameState)
 
