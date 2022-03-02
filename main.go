@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/PatrikOlin/gordle/api"
 )
 
 func rules() {
@@ -107,7 +110,11 @@ func game() {
 }
 
 func main() {
-	rules()
-	game()
-	fmt.Println("Thanks for playing")
+	// rules()
+	// game()
+	// fmt.Println("Thanks for playing")
+
+	r := api.GetRouter()
+
+	http.ListenAndServe(":4040", r)
 }
