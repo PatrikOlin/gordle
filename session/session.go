@@ -27,6 +27,18 @@ func Create() Session {
 	return s
 }
 
+func Get(sessionID string) Session {
+	var session Session
+	stmt := "SELECT * FROM sessions WHERE id = $1"
+	err := db.DBClient.Get(&session, stmt, sessionID)
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	return session
+}
+
 func persistSession(s Session) {
 	stmt := "INSERT INTO sessions (id, status, word) VALUES (?, ?, ?)"
 

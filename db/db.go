@@ -11,7 +11,8 @@ import (
 var DBClient *sqlx.DB
 
 func Open() (*sqlx.DB, error) {
-	DBClient, err := sqlx.Connect("sqlite3", "./db/data.db")
+	var err error
+	DBClient, err = sqlx.Connect("sqlite3", "_data.db")
 
 	if err != nil {
 		fmt.Println("ingen db")
