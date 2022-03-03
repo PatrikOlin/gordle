@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/PatrikOlin/gordle/api"
+	"github.com/PatrikOlin/gordle/db"
 )
 
 func rules() {
@@ -106,6 +108,13 @@ func game() {
 		}
 
 		count++
+	}
+}
+
+func init() {
+	_, err := db.Open()
+	if err != nil {
+		log.Fatalln("Failed to connect to database")
 	}
 }
 
