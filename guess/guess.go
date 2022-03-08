@@ -3,7 +3,6 @@ package guess
 import (
 	"fmt"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/PatrikOlin/gordle/db"
 )
@@ -33,10 +32,13 @@ func MakeGuess(guess string, correctWord string, sessionID string) Guess {
 	var wordState []string
 	wordState = make([]string, 5)
 
-	for i := 0; i < utf8.RuneCountInString(guess); i++ {
-		if guess[i] == correctWord[i] {
+	runesGuess := []rune(guess)
+	runesCorrect := []rune(correctWord)
+
+	for i := 0; i < len(runesGuess); i++ {
+		if runesGuess[i] == runesCorrect[i] {
 			wordState[i] = correct
-		} else if strings.ContainsAny(correctWord, string(guess[i])) {
+		} else if contains(runesCorrect, runesGuess[i]) {
 			wordState[i] = correctish
 		} else {
 			wordState[i] = wrong
@@ -59,4 +61,13 @@ func persistGuess(g Guess, sessionID string) error {
 		return err
 	}
 	return nil
+}
+
+func contains(r []rune, ru rune) bool {
+	for _, v := range r {
+		if v == ru {
+			return true
+		}
+	}
+	return false
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/go-chi/chi/v5"
@@ -51,7 +52,7 @@ func guessWord(session s.Session, guess IncomingGuess) (sess s.Session, err erro
 	}
 
 	// session.WordState = session.TestWord(guess.Word)
-	answer := g.MakeGuess(guess.Word, session.Word, session.ID.String())
+	answer := g.MakeGuess(strings.ToLower(guess.Word), strings.ToLower(session.Word), session.ID.String())
 	session.NumOfGuesses++
 
 	if answer.WordState == "GGGGG" {
