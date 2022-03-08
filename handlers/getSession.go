@@ -15,18 +15,23 @@ func GetSession(w http.ResponseWriter, r *http.Request) {
 
 	sessionID := chi.URLParam(r, "id")
 
-	session := getSession(sessionID)
+	session, err := getSession(sessionID)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(err)
+	}
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(session)
 }
 
-func getSession(sessionID string) s.Session {
+func getSession(sessionID string) (s.Session, error) {
 	fmt.Println(sessionID)
 
 	if sessionID != "" {
 		return s.Get(sessionID)
 	}
 
-	return s.Create()
+	return s.Create(), nil
 }
