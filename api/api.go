@@ -6,21 +6,23 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"go.uber.org/zap"
 
 	"github.com/PatrikOlin/gordle/handlers"
+	m "github.com/PatrikOlin/gordle/middleware"
 )
 
-func GetRouter() *chi.Mux {
+func GetRouter(log *zap.Logger) *chi.Mux {
 	r := chi.NewRouter()
 
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-
-	r.Use(middleware.Timeout(60 * time.Second))
-
-	r.Use(cors.AllowAll().Handler)
+	r.Use(
+		middleware.RequestID,
+		middleware.RealIP,
+		middleware.Recoverer,
+		middleware.Timeout(60*time.Second),
+		m.SetLogger(log),
+		cors.AllowAll().Handler,
+	)
 
 	r.Get("/rules", handlers.GetRules)
 	r.Post("/word/{id}", handlers.GuessWord)
