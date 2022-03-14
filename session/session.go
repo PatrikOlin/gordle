@@ -8,12 +8,13 @@ import (
 
 	"github.com/PatrikOlin/gordle/db"
 	g "github.com/PatrikOlin/gordle/guess"
+	"github.com/PatrikOlin/gordle/rules"
 	"github.com/PatrikOlin/gordle/word"
 )
 
 type Session struct {
 	ID   uuid.UUID `json:"id" db:"id"`
-	Word string    `json:"-" db:"word"`
+	Word string    `json:"word,omitempty" db:"word"`
 	// WordState    string    `json:"wordState" db:"word_state"`
 	Status       string    `json:"status" db:"status"`
 	Guesses      []g.Guess `json:"guesses" db:"-"`
@@ -46,10 +47,6 @@ func Get(sessionID string) (Session, error) {
 		return session, err
 	}
 
-	// if session.GuessesString != "" {
-	// 	session.Guesses = strings.Split(session.GuessesString, ",")
-	// }
-
 	return session, nil
 }
 
@@ -74,4 +71,10 @@ func (s *Session) Update() {
 func (s *Session) GetGuesses() {
 	stmt := "SELECT word, word_state FROM guesses WHERE session_id = ?"
 	db.DBClient.Select(&s.Guesses, stmt, s.ID)
+}
+
+func (s *Session) SetWordVisibility() {
+	if s.Status == "unsolved" && s.NumOfGuesses != rules.Get().MaxGuesses {
+		s.Word = ""
+	}
 }

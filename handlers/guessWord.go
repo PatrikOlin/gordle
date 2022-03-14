@@ -39,6 +39,7 @@ func GuessWord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	session.SetWordVisibility()
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(session)
 }
