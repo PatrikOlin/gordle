@@ -1,22 +1,20 @@
-FROM golang:1.17-alpine AS build-env
-
+FROM golang:1.17 AS build-env
 ENV PORT 4040
-ENV APP_NAME gordle
 
 WORKDIR /app
+COPY . .
 
-COPY . ./
 RUN go mod download
+RUN go mod verify
+RUN go build -o gordle
 
-COPY *.go ./
-RUN CGO_ENABLED=0 go build -o $APP_NAME *.go
-
-FROM alpine:3.14
+FROM debian:buster
 
 WORKDIR /
 
-COPY --from=build-env /$APP_NAME .
+COPY --from=build-env /app/gordle .
+COPY --from=build-env /app/_data.db .
 
 EXPOSE $PORT
 
-CMD ./$APP_NAME
+CMD ["./gordle"]
