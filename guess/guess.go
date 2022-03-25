@@ -1,6 +1,7 @@
 package guess
 
 import (
+	"database/sql"
 	"fmt"
 	"strings"
 
@@ -52,6 +53,21 @@ func MakeGuess(guess string, correctWord string, sessionID string) Guess {
 	}
 
 	return g
+}
+
+func IsWordInList(word string) bool {
+	stmt := "SELECT word FROM words WHERE word = ? LIMIT 1"
+
+	var res string
+	err := db.DBClient.Get(&res, stmt, word)
+
+	if err == sql.ErrNoRows {
+		return false
+	} else if err != nil {
+		fmt.Println(err)
+	}
+
+	return true
 }
 
 func persistGuess(g Guess, sessionID string) error {

@@ -53,15 +53,28 @@ func init() {
 // }
 
 func main() {
-	logger, _ := zap.NewProduction(zap.WithCaller(false))
+	// logger, _ := zap.NewProduction(zap.WithCaller(false))
+	logger, err := newLogger()
+	if err != nil {
+		log.Fatalln(err)
+	}
 	defer func() {
 		_ = logger.Sync()
 	}()
 
 	r := api.GetRouter(logger)
 
-	err := http.ListenAndServe(addr, r)
+	err = http.ListenAndServe(addr, r)
 	if err != nil {
 		log.Fatalln(err)
 	}
+}
+
+func newLogger() (*zap.Logger, error) {
+	cfg := zap.NewProductionConfig()
+	cfg.OutputPaths = []string{
+		"gordle.log",
+		"stdout",
+	}
+	return cfg.Build(zap.WithCaller(true))
 }
