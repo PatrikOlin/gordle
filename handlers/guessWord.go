@@ -8,8 +8,6 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/go-chi/chi/v5"
-
 	e "github.com/PatrikOlin/gordle/errors"
 	g "github.com/PatrikOlin/gordle/guess"
 	r "github.com/PatrikOlin/gordle/rules"
@@ -23,8 +21,16 @@ type IncomingGuess struct {
 func GuessWord(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-type", "application/json")
 
-	sessionID := chi.URLParam(r, "id")
-	session, err := s.Get(sessionID)
+	c, err := r.Cookie("user_session_token")
+	if err != nil {
+		error := e.E("GetSession", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println(error)
+		json.NewEncoder(w).Encode(error)
+		return
+	}
+
+	session, err := s.Get(c.Value)
 	if err != nil {
 		error := e.E("GuessWord", err, http.StatusBadRequest)
 		w.WriteHeader(http.StatusBadRequest)
@@ -53,15 +59,16 @@ func GuessWord(w http.ResponseWriter, r *http.Request) {
 }
 
 func guessWord(session s.Session, guess IncomingGuess) s.Session {
-	answer := g.MakeGuess(strings.ToLower(guess.Word), strings.ToLower(session.Word), session.ID.String())
+	newGuess := g.MakeGuess(strings.ToLower(guess.Word), strings.ToLower(session.Word), session.ID.String())
+	session.Guesses = append(session.Guesses, newGuess)
+
 	session.NumOfGuesses++
 
-	if answer.WordState == "GGGGG" {
+	if newGuess.WordState == "GGGGG" {
 		session.Status = "solved"
 	}
 
 	session.Update()
-	session.GetGuesses()
 	return session
 }
 

@@ -29,9 +29,9 @@ func GetRouter(log *zap.Logger) *chi.Mux {
 	)
 
 	r.Get("/rules", handlers.GetRules)
-	r.Post("/word/{id}", handlers.GuessWord)
+	r.Post("/word", handlers.GuessWord)
 	r.Get("/session", handlers.GetSession)
-	r.Get("/session/{id}", handlers.GetSession)
+	// r.Get("/session/{id}", handlers.GetSession)
 	// r.Get("/word", handlers.GetWord)
 	// r.Get("/state", handlers.GetGameState)
 

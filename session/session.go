@@ -54,6 +54,9 @@ func Get(userToken string) (Session, error) {
 		return session, err
 	}
 
+	fmt.Println("session ", session.ID, session.Word)
+
+	session.GetGuesses()
 	return session, nil
 }
 
@@ -90,6 +93,7 @@ func (s *Session) Update() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
 }
 
 func (s *Session) GetGuesses() {
@@ -101,4 +105,15 @@ func (s *Session) SetWordVisibility() {
 	if s.Status == "unsolved" && s.NumOfGuesses != rules.Get().MaxGuesses {
 		s.Word = ""
 	}
+}
+
+func (s *Session) IsAlive() bool {
+	if s.NumOfGuesses >= rules.Get().MaxGuesses {
+		return false
+	}
+	if s.Status == "solved" {
+		return false
+	}
+
+	return true
 }

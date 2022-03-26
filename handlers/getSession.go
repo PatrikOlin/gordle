@@ -32,8 +32,6 @@ func GetSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// sessionID := chi.URLParam(r, "id")
-
 	session, err := getSession(c.Value)
 	if err != nil {
 		fmt.Println(err)
@@ -49,12 +47,11 @@ func GetSession(w http.ResponseWriter, r *http.Request) {
 }
 
 func getSession(userToken string) (s.Session, error) {
-	fmt.Println("i get session", userToken)
 	var session s.Session
 
 	session, err := s.Get(userToken)
 
-	if err == sql.ErrNoRows {
+	if err == sql.ErrNoRows || !session.IsAlive() {
 		return s.Create(userToken), nil
 	} else if err != nil {
 		return session, err
