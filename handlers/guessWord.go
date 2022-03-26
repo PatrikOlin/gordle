@@ -67,13 +67,13 @@ func guessWord(session s.Session, guess IncomingGuess) s.Session {
 
 func isGuessValid(session s.Session, guess IncomingGuess) (ok bool, err error) {
 	if utf8.RuneCountInString(guess.Word) != 5 {
-		return false, errors.New("Guess a FIVE LETTER word")
+		return false, errors.New("Gissa på ett ord med FEM bokstäver")
 	}
 	if session.NumOfGuesses >= r.Get().MaxGuesses {
-		return false, errors.New("Out of guesses")
+		return false, errors.New("Slut på gissningar")
 	}
 	if !g.IsWordInList(guess.Word) {
-		return false, errors.New("That is not a word")
+		return false, errors.New("Finns inte i ordlistan")
 	}
 
 	return true, nil

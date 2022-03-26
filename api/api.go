@@ -21,7 +21,11 @@ func GetRouter(log *zap.Logger) *chi.Mux {
 		middleware.Recoverer,
 		middleware.Timeout(60*time.Second),
 		m.SetLogger(log),
-		cors.AllowAll().Handler,
+		// cors.AllowAll().Handler,
+		cors.Handler(cors.Options{
+			AllowedOrigins:   []string{"http://*", "https://*"},
+			AllowCredentials: true,
+		}),
 	)
 
 	r.Get("/rules", handlers.GetRules)

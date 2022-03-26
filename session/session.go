@@ -3,6 +3,7 @@ package session
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -13,34 +14,40 @@ import (
 )
 
 type Session struct {
-	ID   uuid.UUID `json:"id" db:"id"`
-	Word string    `json:"word,omitempty" db:"word"`
-	// WordState    string    `json:"wordState" db:"word_state"`
+	ID           uuid.UUID `json:"id" db:"id"`
+	Word         string    `json:"word,omitempty" db:"word"`
 	Status       string    `json:"status" db:"status"`
 	Guesses      []g.Guess `json:"guesses" db:"-"`
 	NumOfGuesses int       `json:"numberOfGuesses" db:"number_of_guesses"`
+	CreatedAt    int       `json:"createdAt" db:"created_at"`
 }
 
-func Create() Session {
+func Create(userToken string) Session {
 	s := Session{
-		ID:   uuid.New(),
-		Word: word.New(),
-		// WordState: ".....",
-		Status:  "unsolved",
-		Guesses: make([]g.Guess, 0, 6),
-		// GuessesString: "",
+		ID:           uuid.New(),
+		Word:         word.New(),
+		Status:       "unsolved",
+		Guesses:      make([]g.Guess, 0, 6),
 		NumOfGuesses: 0,
+		CreatedAt:    int(time.Now().Unix()),
 	}
 
-	persistSession(s)
+	persistSession(s, userToken)
 
 	return s
 }
 
-func Get(sessionID string) (Session, error) {
+func Get(userToken string) (Session, error) {
 	var session Session
-	stmt := "SELECT * FROM sessions WHERE id = $1"
-	err := db.DBClient.Get(&session, stmt, sessionID)
+	stmt := `
+		SELECT s.id, status, word, number_of_guesses, created_at FROM sessions s
+		JOIN user_game_sessions usg on s.id = usg.game_id
+		JOIN user_sessions us on us.token = usg.user_token
+		WHERE us.token = $1
+		ORDER BY s.created_at DESC LIMIT 1`
+
+	// stmt := "SELECT * FROM sessions s INNER JOIN user_game_sessions ugs ON ugs.token = WHERE id = $1"
+	err := db.DBClient.Get(&session, stmt, userToken)
 
 	if err != nil {
 		fmt.Println(err)
@@ -50,10 +57,27 @@ func Get(sessionID string) (Session, error) {
 	return session, nil
 }
 
-func persistSession(s Session) {
-	stmt := "INSERT INTO sessions (id, word, status, number_of_guesses) VALUES (?, ?, ?, ?)"
+func persistSession(s Session, userToken string) {
+	stmt := "INSERT INTO sessions (id, word, status, number_of_guesses, created_at) VALUES ($1, $2, $3, $4, $5)"
 
-	_, err := db.DBClient.Exec(stmt, s.ID, s.Word, s.Status, s.NumOfGuesses)
+	tx, err := db.DBClient.Begin()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	_, err = tx.Exec(stmt, s.ID, s.Word, s.Status, s.NumOfGuesses, s.CreatedAt)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	stmt2 := "INSERT INTO user_game_sessions (user_token, game_id) VALUES ($1, $2)"
+
+	_, err = tx.Exec(stmt2, userToken, s.ID)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	err = tx.Commit()
 	if err != nil {
 		log.Fatalln(err)
 	}
