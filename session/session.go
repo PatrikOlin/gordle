@@ -10,6 +10,7 @@ import (
 	"github.com/PatrikOlin/gordle/db"
 	g "github.com/PatrikOlin/gordle/guess"
 	"github.com/PatrikOlin/gordle/rules"
+	st "github.com/PatrikOlin/gordle/stats"
 	"github.com/PatrikOlin/gordle/word"
 )
 
@@ -20,6 +21,11 @@ type Session struct {
 	Guesses      []g.Guess `json:"guesses" db:"-"`
 	NumOfGuesses int       `json:"numberOfGuesses" db:"number_of_guesses"`
 	CreatedAt    int       `json:"createdAt" db:"created_at"`
+}
+
+type FinishedSession struct {
+	Session
+	Stats st.Stats `json:"stats"`
 }
 
 func Create(userToken string) Session {
@@ -116,4 +122,52 @@ func (s *Session) IsAlive() bool {
 	}
 
 	return true
+}
+
+func (s Session) GetStats(userToken string) FinishedSession {
+	sessions := []Session{}
+	stmt := `
+		SELECT s.id, status, word, number_of_guesses, created_at FROM sessions s
+		JOIN user_game_sessions usg on s.id = usg.game_id
+		JOIN user_sessions us on us.token = usg.user_token
+		WHERE us.token = $1
+		ORDER BY s.created_at ASC`
+
+	err := db.DBClient.Select(&sessions, stmt, userToken)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	stats := st.Stats{}
+	ms := 0
+	cs := 0
+
+	for _, session := range sessions {
+		if session.Status == "solved" {
+			cs += 1
+			if cs > ms {
+				ms = cs
+			}
+			stats.WinDistribution.Add(session.NumOfGuesses)
+		} else {
+			if cs > ms {
+				ms = cs
+			}
+			cs = 0
+
+			stats.WinDistribution.Unsolved += 1
+		}
+	}
+
+	stats.CurrentStreak = cs
+	stats.MaxStreak = ms
+	stats.CalculateWinPercentage()
+	fmt.Println(stats.WinPercentage)
+
+	fs := FinishedSession{
+		Session: s,
+		Stats:   stats,
+	}
+
+	return fs
 }

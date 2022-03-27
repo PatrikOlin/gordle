@@ -10,6 +10,7 @@ import (
 
 	e "github.com/PatrikOlin/gordle/errors"
 	g "github.com/PatrikOlin/gordle/guess"
+	"github.com/PatrikOlin/gordle/rules"
 	r "github.com/PatrikOlin/gordle/rules"
 	s "github.com/PatrikOlin/gordle/session"
 )
@@ -27,6 +28,7 @@ func GuessWord(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Println(error)
 		json.NewEncoder(w).Encode(error)
+
 		return
 	}
 
@@ -36,6 +38,7 @@ func GuessWord(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Println(error)
 		json.NewEncoder(w).Encode(error)
+
 		return
 	}
 
@@ -48,10 +51,20 @@ func GuessWord(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Println(error)
 		json.NewEncoder(w).Encode(error)
+
 		return
 	}
 
 	session = guessWord(session, guess)
+
+	if session.Status == "solved" || session.NumOfGuesses >= rules.Get().MaxGuesses {
+		fs := session.GetStats(c.Value)
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(fs)
+
+		return
+	}
 
 	session.SetWordVisibility()
 	w.WriteHeader(http.StatusOK)
