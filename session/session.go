@@ -15,7 +15,7 @@ import (
 )
 
 type Session struct {
-	ID           uuid.UUID `json:"id" db:"id"`
+	ID           uuid.UUID `json:"id" db:"game_id"`
 	Word         string    `json:"word,omitempty" db:"word"`
 	Status       string    `json:"status" db:"status"`
 	Guesses      []g.Guess `json:"guesses" db:"-"`
@@ -46,9 +46,9 @@ func Create(userToken string) Session {
 func Get(userToken string) (Session, error) {
 	var session Session
 	stmt := `
-		SELECT s.id, status, word, number_of_guesses, created_at FROM sessions s
-		JOIN user_game_sessions usg on s.id = usg.game_id
-		JOIN user_sessions us on us.token = usg.user_token
+		SELECT game_id, status, word, number_of_guesses, created_at FROM game_session s
+		JOIN user_game_session usg on s.game_id = usg.game_id
+		JOIN user_session us on us.token = usg.user_token
 		WHERE us.token = $1
 		ORDER BY s.created_at DESC LIMIT 1`
 
@@ -67,7 +67,7 @@ func Get(userToken string) (Session, error) {
 }
 
 func persistSession(s Session, userToken string) {
-	stmt := "INSERT INTO sessions (id, word, status, number_of_guesses, created_at) VALUES ($1, $2, $3, $4, $5)"
+	stmt := "INSERT INTO game_session (game_id, word, status, number_of_guesses, created_at) VALUES ($1, $2, $3, $4, $5)"
 
 	tx, err := db.DBClient.Begin()
 	if err != nil {
@@ -79,7 +79,7 @@ func persistSession(s Session, userToken string) {
 		log.Fatalln(err)
 	}
 
-	stmt2 := "INSERT INTO user_game_sessions (user_token, game_id) VALUES ($1, $2)"
+	stmt2 := "INSERT INTO user_game_session (user_token, game_id) VALUES ($1, $2)"
 
 	_, err = tx.Exec(stmt2, userToken, s.ID)
 	if err != nil {
@@ -93,7 +93,7 @@ func persistSession(s Session, userToken string) {
 }
 
 func (s *Session) Update() {
-	stmt := "UPDATE sessions SET status=:status, number_of_guesses=:number_of_guesses WHERE id=:id"
+	stmt := "UPDATE game_session SET status=:status, number_of_guesses=:number_of_guesses WHERE game_id=:id"
 
 	_, err := db.DBClient.NamedExec(stmt, s)
 	if err != nil {
@@ -127,9 +127,9 @@ func (s *Session) IsAlive() bool {
 func (s Session) GetStats(userToken string) FinishedSession {
 	sessions := []Session{}
 	stmt := `
-		SELECT s.id, status, word, number_of_guesses, created_at FROM sessions s
-		JOIN user_game_sessions usg on s.id = usg.game_id
-		JOIN user_sessions us on us.token = usg.user_token
+		SELECT game_id, status, word, number_of_guesses, created_at FROM game_session s
+		JOIN user_game_session usg on s.game_id = usg.game_id
+		JOIN user_session us on us.token = usg.user_token
 		WHERE us.token = $1
 		ORDER BY s.created_at ASC`
 

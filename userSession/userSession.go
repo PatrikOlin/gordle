@@ -21,7 +21,7 @@ func Create() UserSession {
 }
 
 func persistUserSession(us UserSession) {
-	stmt := "INSERT INTO user_sessions (token) VALUES (?)"
+	stmt := "INSERT INTO user_session (token) VALUES ($1)"
 
 	_, err := db.DBClient.Exec(stmt, us.Token)
 	if err != nil {

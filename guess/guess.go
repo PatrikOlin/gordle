@@ -56,7 +56,7 @@ func MakeGuess(guess string, correctWord string, sessionID string) Guess {
 }
 
 func IsWordInList(word string) bool {
-	stmt := "SELECT word FROM words WHERE word = ? LIMIT 1"
+	stmt := "SELECT word FROM word WHERE word = $1 LIMIT 1"
 
 	var res string
 	err := db.DBClient.Get(&res, stmt, word)
@@ -71,7 +71,7 @@ func IsWordInList(word string) bool {
 }
 
 func persistGuess(g Guess, sessionID string) error {
-	stmt := "INSERT INTO guesses (session_id, word, word_state) VALUES (?, ?, ?)"
+	stmt := "INSERT INTO guess (session_id, word, word_state) VALUES ($1, $2, $3)"
 	_, err := db.DBClient.DB.Exec(stmt, sessionID, g.Word, g.WordState)
 	if err != nil {
 		return err
