@@ -8,8 +8,8 @@ import (
 	"github.com/go-chi/cors"
 	"go.uber.org/zap"
 
-	"github.com/PatrikOlin/gordle/handlers"
-	m "github.com/PatrikOlin/gordle/middleware"
+	"github.com/PatrikOlin/gordle/pkg/handlers"
+	m "github.com/PatrikOlin/gordle/pkg/middleware"
 )
 
 func GetRouter(log *zap.Logger) *chi.Mux {
@@ -21,7 +21,6 @@ func GetRouter(log *zap.Logger) *chi.Mux {
 		middleware.Recoverer,
 		middleware.Timeout(60*time.Second),
 		m.SetLogger(log),
-		// cors.AllowAll().Handler,
 		cors.Handler(cors.Options{
 			AllowedOrigins:   []string{"http://*", "https://*"},
 			AllowCredentials: true,
@@ -31,9 +30,6 @@ func GetRouter(log *zap.Logger) *chi.Mux {
 	r.Get("/rules", handlers.GetRules)
 	r.Post("/word", handlers.GuessWord)
 	r.Get("/session", handlers.GetSession)
-	// r.Get("/session/{id}", handlers.GetSession)
-	// r.Get("/word", handlers.GetWord)
-	// r.Get("/state", handlers.GetGameState)
 
 	return r
 }

@@ -3,7 +3,7 @@ package handlers
 import (
 	// "encoding/json"
 	"net/http"
-	// "github.com/PatrikOlin/gordle/session"
+	// "github.com/PatrikOlin/gordle/pkg/session"
 )
 
 func NewSession(w http.ResponseWriter, r *http.Request) {

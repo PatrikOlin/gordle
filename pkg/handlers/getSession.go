@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	e "github.com/PatrikOlin/gordle/errors"
-	s "github.com/PatrikOlin/gordle/session"
-	us "github.com/PatrikOlin/gordle/userSession"
+	e "github.com/PatrikOlin/gordle/pkg/errors"
+	s "github.com/PatrikOlin/gordle/pkg/session"
+	us "github.com/PatrikOlin/gordle/pkg/user-session"
 )
 
 func GetSession(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +32,8 @@ func GetSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := getSession(c.Value)
+	userSession := us.GetUserSession(c.Value)
+	session, err := getSession(userSession)
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -46,13 +47,13 @@ func GetSession(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(session)
 }
 
-func getSession(userToken string) (s.Session, error) {
+func getSession(userSession us.UserSession) (s.Session, error) {
 	var session s.Session
 
-	session, err := s.Get(userToken)
+	session, err := s.Get(userSession)
 
-	if err == sql.ErrNoRows || !session.IsAlive() {
-		return s.Create(userToken), nil
+	if err == sql.ErrNoRows || session.IsAlive() == false {
+		return s.Create(userSession), nil
 	} else if err != nil {
 		return session, err
 	}

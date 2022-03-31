@@ -8,11 +8,12 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	e "github.com/PatrikOlin/gordle/errors"
-	g "github.com/PatrikOlin/gordle/guess"
-	"github.com/PatrikOlin/gordle/rules"
-	r "github.com/PatrikOlin/gordle/rules"
-	s "github.com/PatrikOlin/gordle/session"
+	e "github.com/PatrikOlin/gordle/pkg/errors"
+	g "github.com/PatrikOlin/gordle/pkg/guess"
+	"github.com/PatrikOlin/gordle/pkg/rules"
+	r "github.com/PatrikOlin/gordle/pkg/rules"
+	s "github.com/PatrikOlin/gordle/pkg/session"
+	us "github.com/PatrikOlin/gordle/pkg/user-session"
 )
 
 type IncomingGuess struct {
@@ -32,7 +33,8 @@ func GuessWord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := s.Get(c.Value)
+	userSession := us.GetUserSession(c.Value)
+	session, err := s.Get(userSession)
 	if err != nil {
 		error := e.E("GuessWord", err, http.StatusBadRequest)
 		w.WriteHeader(http.StatusBadRequest)
@@ -58,7 +60,8 @@ func GuessWord(w http.ResponseWriter, r *http.Request) {
 	session = guessWord(session, guess)
 
 	if session.Status == "solved" || session.NumOfGuesses >= rules.Get().MaxGuesses {
-		fs := session.GetStats(c.Value)
+		fs := session.GetStats(userSession.Token.String())
+		userSession.SetDailyFinished()
 
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(fs)

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/PatrikOlin/gordle/db"
+	"github.com/PatrikOlin/gordle/pkg/db"
 )
 
 type Guess struct {
@@ -56,7 +56,7 @@ func MakeGuess(guess string, correctWord string, sessionID string) Guess {
 }
 
 func IsWordInList(word string) bool {
-	stmt := "SELECT word FROM word WHERE word = $1 LIMIT 1"
+	stmt := "SELECT value FROM word  WHERE value = $1 LIMIT 1"
 
 	var res string
 	err := db.DBClient.Get(&res, stmt, word)

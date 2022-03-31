@@ -7,8 +7,8 @@ import (
 	"github.com/spf13/pflag"
 	"go.uber.org/zap"
 
-	"github.com/PatrikOlin/gordle/api"
-	"github.com/PatrikOlin/gordle/db"
+	"github.com/PatrikOlin/gordle/pkg/api"
+	"github.com/PatrikOlin/gordle/pkg/db"
 )
 
 var (
@@ -26,34 +26,7 @@ func init() {
 	}
 }
 
-// func process() {
-// 	f, err := os.Open("swe_wordlist_filtered")
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	defer f.Close()
-
-// 	scanner := bufio.NewScanner(f)
-
-// 	fmt.Println("file read")
-// 	count := 0
-// 	for scanner.Scan() {
-// 		stmt := "INSERT INTO words (word) VALUES (?)"
-// 		_, err = db.DBClient.Exec(stmt, scanner.Text())
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-// 		count++
-// 		if count%100 == 0 {
-// 			fmt.Println("count ", count)
-// 			fmt.Println("Inserted ", scanner.Text())
-// 		}
-// 	}
-
-// }
-
 func main() {
-	// logger, _ := zap.NewProduction(zap.WithCaller(false))
 	logger, err := newLogger()
 	if err != nil {
 		log.Fatalln(err)
