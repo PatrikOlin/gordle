@@ -24,7 +24,7 @@ type Session struct {
 	NumOfGuesses int       `json:"numberOfGuesses" db:"number_of_guesses"`
 	CreatedAt    int       `json:"createdAt" db:"created_at"`
 	FinishedAt   int       `json:"finishedAt,omitempty" db:"finished_at"`
-	IsDaily      bool      `json:"isDaily" db:"-"`
+	IsDaily      bool      `json:"isDaily" db:"daily"`
 }
 
 type FinishedSession struct {
@@ -76,7 +76,6 @@ func Get(userSession us.UserSession) (Session, error) {
 		return session, err
 	}
 
-	session.IsDaily = !userSession.FinishedDaily
 	fmt.Println("session ", session.ID, session.Word)
 	session.GetGuesses()
 	return session, nil
