@@ -82,14 +82,14 @@ func Get(userSession us.UserSession) (Session, error) {
 }
 
 func persistSession(s Session, userToken string) {
-	stmt := "INSERT INTO game_session (session_id, word, status, number_of_guesses, created_at, finished_at) VALUES ($1, $2, $3, $4, $5, $6)"
+	stmt := "INSERT INTO game_session (session_id, word, status, number_of_guesses, created_at, finished_at, daily) VALUES ($1, $2, $3, $4, $5, $6, $7)"
 
 	tx, err := db.DBClient.Begin()
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	_, err = tx.Exec(stmt, s.ID, s.Word, s.Status, s.NumOfGuesses, s.CreatedAt, s.FinishedAt)
+	_, err = tx.Exec(stmt, s.ID, s.Word, s.Status, s.NumOfGuesses, s.CreatedAt, s.FinishedAt, s.IsDaily)
 	if err != nil {
 		log.Fatalln(err)
 	}
