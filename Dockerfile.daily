@@ -1,4 +1,5 @@
 FROM golang:1.17 AS build-env
+ENV CGO_ENABLED=0
 
 WORKDIR /app
 COPY . .
@@ -7,10 +8,11 @@ RUN go mod download
 RUN go mod verify
 RUN go build -o gordle_daily ./cmd/daily/
 
-FROM debian:buster
+FROM alpine
 
 WORKDIR /
 
-COPY --from=build-env /app/gordle .
+COPY --from=build-env /app/gordle_daily .
+COPY --from=build-env /app/.env .
 
 CMD ["./gordle_daily"]
