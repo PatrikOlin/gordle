@@ -76,6 +76,7 @@ func Get(userSession us.UserSession) (Session, error) {
 		return session, err
 	}
 
+	session.IsDaily = !userSession.FinishedDaily
 	fmt.Println("session ", session.ID, session.Word)
 	session.GetGuesses()
 	return session, nil
