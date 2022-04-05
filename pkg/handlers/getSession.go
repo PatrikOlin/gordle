@@ -32,11 +32,19 @@ func GetSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userSession := us.GetUserSession(c.Value)
+	userSession, err := us.GetUserSession(c.Value)
+	if err == sql.ErrNoRows {
+		userSession = us.Create()
+	} else if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+	}
+
 	session, err := getSession(userSession)
 	if err != nil {
 		fmt.Println(err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err)
 	}
 

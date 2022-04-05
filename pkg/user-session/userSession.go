@@ -22,22 +22,22 @@ func Create() UserSession {
 	return us
 }
 
-func GetUserSession(userToken string) UserSession {
+func GetUserSession(userToken string) (UserSession, error) {
 	var us UserSession
 	stmt := "SELECT token, finished_daily FROM user_session WHERE token = $1"
 
 	err := db.DBClient.Get(&us, stmt, userToken)
 	if err != nil {
-		log.Fatalln(err)
+		return us, err
 	}
 
-	return us
+	return us, nil
 }
 
 func (us *UserSession) SetDailyFinished() {
-	stmt := "UPDATE user_session us SET finished_daily = TRUE"
+	stmt := "UPDATE user_session us SET finished_daily = TRUE WHERE token = $1"
 
-	_, err := db.DBClient.Exec(stmt)
+	_, err := db.DBClient.Exec(stmt, us.Token)
 	if err != nil {
 		log.Fatalln(err)
 	}

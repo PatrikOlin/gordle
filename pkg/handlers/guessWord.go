@@ -33,7 +33,16 @@ func GuessWord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userSession := us.GetUserSession(c.Value)
+	userSession, err := us.GetUserSession(c.Value)
+	if err != nil {
+		error := e.E("GuessWord", err, http.StatusInternalServerError, "User session not found, try clearing your cookies.")
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println(error)
+		json.NewEncoder(w).Encode(error)
+
+		return
+	}
+
 	session, err := s.Get(userSession)
 	if err != nil {
 		error := e.E("GuessWord", err, http.StatusBadRequest)
