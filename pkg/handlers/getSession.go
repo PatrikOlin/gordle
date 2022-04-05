@@ -14,13 +14,15 @@ import (
 
 func GetSession(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-type", "application/json")
+	var userSession us.UserSession
 
 	c, err := r.Cookie("user_session_token")
 	if err == http.ErrNoCookie {
 		fmt.Println("no cookie!")
+		userSession = us.Create()
 		c = &http.Cookie{
 			Name:     "user_session_token",
-			Value:    us.Create().Token.String(),
+			Value:    userSession.Token.String(),
 			MaxAge:   int((365 * 5 * 24 * time.Hour).Seconds()),
 			HttpOnly: true,
 		}
@@ -30,15 +32,15 @@ func GetSession(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(error)
 		json.NewEncoder(w).Encode(error)
 		return
-	}
-
-	userSession, err := us.GetUserSession(c.Value)
-	if err == sql.ErrNoRows {
-		userSession = us.Create()
-	} else if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(err)
+	} else {
+		userSession, err = us.GetUserSession(c.Value)
+		if err == sql.ErrNoRows {
+			userSession = us.Create()
+		} else if err != nil {
+			fmt.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(err)
+		}
 	}
 
 	session, err := getSession(userSession)
