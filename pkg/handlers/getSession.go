@@ -36,6 +36,12 @@ func GetSession(w http.ResponseWriter, r *http.Request) {
 		userSession, err = us.GetUserSession(c.Value)
 		if err == sql.ErrNoRows {
 			userSession = us.Create()
+			c = &http.Cookie{
+				Name:     "user_session_token",
+				Value:    userSession.Token.String(),
+				MaxAge:   int((365 * 5 * 24 * time.Hour).Seconds()),
+				HttpOnly: true,
+			}
 		} else if err != nil {
 			fmt.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
