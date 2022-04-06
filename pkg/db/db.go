@@ -10,14 +10,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const (
-	host     = "192.168.1.252"
-	port     = 5432
-	user     = "postgres"
-	password = "bokhylla"
-	dbname   = "ordle"
-)
-
 var DBClient *sqlx.DB
 
 func Open() (*sqlx.DB, error) {
@@ -33,11 +25,17 @@ func Open() (*sqlx.DB, error) {
 }
 
 func getPqslInfo() string {
+	_, ok := os.LookupEnv("DB_HOST")
+	if !ok {
+		readEnvFromFile()
+	}
+
+	return os.ExpandEnv("host=${DB_HOST} user=${DB_USER} dbname=${DB_NAME} password=${DB_PASSWORD} sslmode=disable")
+}
+
+func readEnvFromFile() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalln("Error loading .env")
 	}
-
-	return os.ExpandEnv("host=${DB_HOST} user=${DB_USER} dbname=${DB_NAME} password=${DB_PASSWORD} sslmode=disable")
-
 }

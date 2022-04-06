@@ -13,6 +13,5 @@ FROM alpine
 WORKDIR /
 
 COPY --from=build-env /app/gordle_daily .
-COPY --from=build-env /app/.env .
 
 CMD ["./gordle_daily"]

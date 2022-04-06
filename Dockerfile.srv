@@ -14,7 +14,6 @@ FROM alpine
 WORKDIR /
 
 COPY --from=build-env /app/gordle .
-COPY --from=build-env /app/.env .
 
 EXPOSE $PORT
 

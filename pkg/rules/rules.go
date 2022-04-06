@@ -11,7 +11,6 @@ var RuleExp = `Rules:
 		- You can only guess using lowercase letters
 		- Green means correct at the right position
 		- Yellow means correct at the wrong position
-	Give a filename in argument to have more words
 
 	Good luck!
 `

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -41,6 +42,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	fmt.Println("Server up and running at ", addr)
 }
 
 func newLogger() (*zap.Logger, error) {
