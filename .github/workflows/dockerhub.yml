@@ -29,11 +29,16 @@ jobs:
           push: true
           tags: patrikolin/gordle:latest
           file: Dockerfile.srv
-          
+
       - name: Build and push daily image
         uses: docker/build-push-action@v2
         with:
           push: true
           tags: patrikolin/gordle-daily:latest
           file: Dockerfile.daily
-          
+          build-args: |
+            DB_HOST=${{ secrets.DB_HOST }}
+            DB_PORT=${{ secrets.DB_PORT }}
+            DB_NAME=${{ secrets.DB_NAME }}
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
