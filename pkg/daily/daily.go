@@ -14,15 +14,15 @@ type Daily struct {
 	Date time.Time `json:"date" db:"date"`
 }
 
-func GetDailyWord() string {
+func GetDailyWord() (string, error) {
 	var word string
 
 	err := db.DBClient.Get(&word, "SELECT word FROM daily_word WHERE date = $1 ORDER BY id DESC LIMIT 1", time.Now().UTC().Format("01-02-2006"))
 	if err != nil {
-		log.Fatalln(err)
+		return word, err
 	}
 
-	return word
+	return word, nil
 }
 
 func Create() {

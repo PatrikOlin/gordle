@@ -1,6 +1,7 @@
 package session
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"time"
@@ -33,16 +34,8 @@ type FinishedSession struct {
 }
 
 func Create(userSession us.UserSession) Session {
-	var word string
-	var isDaily bool
-	if userSession.FinishedDaily {
-		word = w.New()
-		isDaily = false
-	} else {
-		word = dw.GetDailyWord()
-		isDaily = true
-	}
 
+	word, isDaily := getWord(userSession.FinishedDaily)
 	s := Session{
 		ID:           uuid.New(),
 		Word:         word,
@@ -108,7 +101,7 @@ func persistSession(s Session, userToken string) {
 }
 
 func (s *Session) Update() {
-	stmt := "UPDATE game_session SET status=:status, number_of_guesses=:number_of_guesses WHERE session_id=:session_id"
+	stmt := "UPDATE game_session SET status=:status, number_of_guesses=:number_of_guesses, finished_at=:finished_at WHERE session_id=:session_id"
 
 	_, err := db.DBClient.NamedExec(stmt, s)
 	if err != nil {
@@ -184,4 +177,27 @@ func (s Session) GetStats(userToken string) FinishedSession {
 	}
 
 	return fs
+}
+
+func getWord(finishedDaily bool) (string, bool) {
+	var word string
+	var isDaily bool
+	var err error
+
+	if !finishedDaily {
+		word, err = dw.GetDailyWord()
+		isDaily = true
+
+		if err == sql.ErrNoRows {
+			word = w.New()
+			isDaily = false
+		} else if err != nil {
+			log.Fatalln(err, "Could not get daily word, nor endless word")
+		}
+	} else {
+		word = w.New()
+		isDaily = false
+	}
+
+	return word, isDaily
 }

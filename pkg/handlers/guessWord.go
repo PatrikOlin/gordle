@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	e "github.com/PatrikOlin/gordle/pkg/errors"
@@ -70,7 +71,9 @@ func GuessWord(w http.ResponseWriter, r *http.Request) {
 
 	if session.Status == "solved" || session.NumOfGuesses >= rules.Get().MaxGuesses {
 		fs := session.GetStats(userSession.Token.String())
-		userSession.SetDailyFinished()
+		if session.IsDaily {
+			userSession.SetDailyFinished()
+		}
 
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(fs)
@@ -91,6 +94,7 @@ func guessWord(session s.Session, guess IncomingGuess) s.Session {
 
 	if newGuess.WordState == "GGGGG" {
 		session.Status = "solved"
+		session.FinishedAt = int(time.Now().Unix())
 	}
 
 	session.Update()
