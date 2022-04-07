@@ -19,9 +19,12 @@ func main() {
 	setDailyWord()
 	clearDailyUserSessions()
 
-	word := d.GetDailyWord()
+	word, err := d.GetDailyWord()
+	if err != nil {
+		log.Fatalln("Could not select and set daily word", err)
+	}
 
-	fmt.Println(word)
+	fmt.Println("Daily word is ", word)
 }
 
 func setDailyWord() {
