@@ -111,6 +111,9 @@ func isGuessValid(session s.Session, guess IncomingGuess) (ok bool, err error) {
 	if !g.IsWordInList(guess.Word) {
 		return false, errors.New("Finns inte i ordlistan")
 	}
+	if session.Status == "solved" {
+		return false, errors.New("Du har redan löst det här ordet, ladda om sidan för att få ett nytt")
+	}
 
 	return true, nil
 }

@@ -55,7 +55,7 @@ func Create(userSession us.UserSession) Session {
 func Get(userSession us.UserSession) (Session, error) {
 	var session Session
 	stmt := `
-		SELECT session_id, status, s.word, number_of_guesses, created_at, finished_at FROM game_session s
+		SELECT session_id, status, s.word, number_of_guesses, created_at, finished_at, daily FROM game_session s
 		JOIN user_game_session usg on s.session_id = usg.game_id
 		JOIN user_session us on us.token = usg.user_token
 		WHERE us.token = $1
@@ -135,7 +135,7 @@ func (s *Session) IsAlive() bool {
 func (s Session) GetStats(userToken string) FinishedSession {
 	sessions := []Session{}
 	stmt := `
-		SELECT session_id, status, word, number_of_guesses, created_at FROM game_session s
+		SELECT session_id, status, word, number_of_guesses, created_at, finished_at, daily FROM game_session s
 		JOIN user_game_session usg on s.session_id = usg.game_id
 		JOIN user_session us on us.token = usg.user_token
 		WHERE us.token = $1
@@ -184,6 +184,7 @@ func getWord(finishedDaily bool) (string, bool) {
 	var isDaily bool
 	var err error
 
+	fmt.Println("finished daily ", finishedDaily)
 	if !finishedDaily {
 		word, err = dw.GetDailyWord()
 		isDaily = true

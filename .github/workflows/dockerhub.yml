@@ -9,7 +9,6 @@ on:
 jobs:
   dockerhub:
     runs-on: ubuntu-latest
-    environment: gordle-build
 
     steps:
       - name: checkout sources
@@ -37,9 +36,3 @@ jobs:
           push: true
           tags: patrikolin/gordle-daily:latest
           file: Dockerfile.daily
-          build-args: |
-            DB_HOST
-            DB_PORT
-            DB_NAME
-            DB_USER
-            DB_PASSWORD
